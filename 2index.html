@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Increment and Output</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input, button {
+            margin: 10px 0;
+        }
+        #downloadLink {
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <h1>Increment and Output</h1>
+    <label for="startNumber">Starting Number:</label>
+    <input type="number" id="startNumber" value="2000">
+    <label for="reps">Number of Sets:</label>
+    <input type="number" id="reps" value="10">
+    <button onclick="generateAndDownloadZip()">Generate ZIP</button>
+
+    <div id="downloadLink"></div>
+
+    <script>
+        async function generateAndDownloadZip() {
+            let startNumber = parseInt(document.getElementById('startNumber').value, 10);
+            let reps = parseInt(document.getElementById('reps').value, 10);
+            const countPerSet = 10;
+
+            if (isNaN(startNumber) || isNaN(reps) || reps <= 0 || countPerSet <= 0) {
+                alert('Please enter valid numbers.');
+                return;
+            }
+
+            const zip = new JSZip();
+            let currentNumber = startNumber;
+
+            for (let set = 0; set < reps; set++) {
+                let outputData = '';
+                for (let i = 0; i < countPerSet; i++) {
+                    outputData += `md ${currentNumber + i}\n`;
+                }
+
+                // Add each set as a file to the ZIP
+                zip.file(`set_${set + 1}.txt`, outputData);
+
+                // Move to the next number range
+                currentNumber += countPerSet;
+            }
+
+            try {
+                // Generate the ZIP file
+                const content = await zip.generateAsync({ type: 'blob' });
+
+                // Create a download link and trigger the download
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(content);
+                a.download = 'output_sets.zip';
+                a.textContent = 'Download ZIP File';
+                document.getElementById('downloadLink').innerHTML = ''; // Clear previous download links
+                document.getElementById('downloadLink').appendChild(a);
+            } catch (error) {
+                console.error('Error generating ZIP file:', error);
+                alert('Failed to generate ZIP file. Check the console for more details.');
+            }
+        }
+    </script>
+</body>
+</html>
